@@ -10,7 +10,7 @@ const socket = SOCKETIO("http://localhost:8080");
 const App = () => {
   const [joinSound] = useState(new Audio(joinFile));
   const [leaveSound] = useState(new Audio(leaveFile));
-  const [name, setName] = useState("");
+  const [name, setName] = useState(null);
   const [rooms, setRooms] = useState({});
   const [joinedStatus, setJoinedStatus] = useState({
     joined: false,
@@ -63,7 +63,9 @@ const App = () => {
         <input placeholder="must enter name first" />
       </form>
 
-      <button onClick={handleCreateRoom}>CREATE ROOM</button>
+      {name}
+
+      <button onClick={handleCreateRoom} disabled={name == null}>CREATE ROOM</button>
       {Object.keys(rooms).map((roomId, i) => (
         <div data-roomid={roomId} key={i}>
           <ul>
@@ -76,7 +78,7 @@ const App = () => {
           {joinedStatus.joined && joinedStatus.roomId === roomId ? (
             <button onClick={handleLeaveRoom}>Leave</button>
           ) : (
-            <button onClick={handleJoinRoom}>Join</button>
+            <button onClick={handleJoinRoom} disabled={name == null}>Join</button>
           )}
         </div>
       ))}
