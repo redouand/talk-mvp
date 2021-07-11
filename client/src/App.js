@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { v1 } from "uuid";
 import SOCKETIO from "socket.io-client";
+import SimplePeer from 'simple-peer'
 
 import { updateRoomEvent } from './socket.io/updateRooms'
+import OutPutAudio from './components/outputAudio'
 import joinFile from './media/join.mp3'
 import leaveFile from './media/leave.mp3'
 const socket = SOCKETIO("http://localhost:8080");
@@ -12,21 +14,63 @@ const App = () => {
   const [leaveSound] = useState(new Audio(leaveFile));
   const [name, setName] = useState(null);
   const [rooms, setRooms] = useState({});
-  const [joinedStatus, setJoinedStatus] = useState({
-    joined: false,
-    roomId: null,
-  });
+  const [joinedStatus, setJoinedStatus] = useState({ joined: false, roomId: null });
+  const [roomInfo, setRoomInfo] = useState([])
+
+  //----REFERENCES
+  const stream = useRef({})
 
   useEffect(() => {
     socket.on("loadRooms", (ROOMS) => setRooms(ROOMS));
     socket.on("updateRoom", updateRoomEvent(setRooms));
+    socket.on('receiveAnswer', ({ answerSdp, from })=>{
+      setRoomInfo((roomsInfo)=>{
+        const appropericatePeer = (roomsInfo.find((roomObj)=> roomObj.partnerId === from))?.myHisPeer
+        console.log('answer: ', answerSdp) 
+        console.log('app peer:',  appropericatePeer)
+        appropericatePeer?.signal(answerSdp)
+        return roomsInfo
+      })
+    })
   }, []);
 
-//back to square one
+  const addPeer = (stream, sdp, from)=>{
+    const peer = new SimplePeer({ initiator: false, trickle: false, stream: stream })
+    peer.on('signal', answer=>socket.emit('answer', { to: from, from: socket.id, answerSdp: answer }))
+    peer.signal(sdp)
+    return peer
+  }
 
-  const handleJoinRoom = (e) => {
-    joinSound.play()
+  const receiveOfferEvent = (streamVar)=>({sdp, from})=>{
+    const newCommerPeer = addPeer(streamVar, sdp, from)
+    setRoomInfo([...roomInfo, { partnerId: from, myHisPeer: newCommerPeer }])
+  }
+
+  const otherUsersEvent = (streamVar)=> (OTHERSID)=>{
+    const roomInfoTemp = []
+    OTHERSID.forEach((otherId)=>{
+      roomInfoTemp.push({
+        partnerId: otherId,
+        myHisPeer: createConfiguredPeer(otherId, socket.id, streamVar)
+      })
+    })
+    setRoomInfo(roomInfoTemp)
+  }
+
+  const createConfiguredPeer = (otherId, myId, myStream)=>{
+    const peer = new SimplePeer({ initiator: true, stream: myStream, trickle: false })
+    peer.on('signal', (offer)=>socket.emit('offer', { from: myId, to: otherId, sdp: offer } ))
+    return peer
+  }
+
+  const handleJoinRoom = async (e) => {
     const roomId = e.target.parentNode.getAttribute("data-roomid");
+    joinSound.play()
+    const streamVar = await navigator.mediaDevices.getUserMedia({ audio: true })
+    socket.on('otherUsers', otherUsersEvent(streamVar))
+    socket.on('receiveOffer', receiveOfferEvent(streamVar))
+    stream.current = streamVar
+
     if (joinedStatus.joined) {
       socket.emit("jumpRoom", {
         prevRoom: joinedStatus.roomId,
@@ -45,8 +89,9 @@ const App = () => {
     socket.emit("createRoom", { roomId: v1(), userId: socket.id });
 
   const handleLeaveRoom = (e) => {
-    leaveSound.play()
     const roomId = e.target.parentNode.getAttribute("data-roomid");
+    leaveSound.play()
+    stream.current.getTracks()[0].stop()
     socket.emit("leaveRoom", { roomId, userId: socket.id });
     setJoinedStatus({ joined: false, roomId: null });
   };
@@ -82,6 +127,11 @@ const App = () => {
           )}
         </div>
       ))}
+      {
+        roomInfo.length && roomInfo.map((partnerObj, i)=>(
+          <OutPutAudio key={i} partner={partnerObj} />
+        ))
+      }
     </div>
   );
 };

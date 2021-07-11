@@ -9,6 +9,9 @@ const ioRoom = (io, client, rooms)=>{
   client.on("joinRoom", ({ roomId, userId, name }) => {
     rooms[roomId][userId] = { name };
     io.emit('updateRoom', { push: { roomId, userId, name } })
+    const otherUsers = Object.keys(rooms[roomId]).filter((otherUserId)=>userId!==otherUserId)
+    if(otherUsers.length)
+      client.emit('otherUsers', otherUsers)
   });
 
   client.on('jumpRoom', ({ prevRoom, currentRoom, name, userId })=>{
@@ -32,22 +35,14 @@ const ioRoom = (io, client, rooms)=>{
     delete rooms[roomId][userId]
     io.emit('updateRoom', { pop: { roomId, userId } })
   });
+
+  client.on('offer', ({ to, ...fromAndSdp })=>{
+    io.to(to).emit('receiveOffer', fromAndSdp)
+  })
+
+  client.on('answer', ({ to, ...fromAndAnswer })=>{
+    io.to(to).emit('receiveAnswer', fromAndAnswer)
+  })
 }
 
 module.exports = ioRoom
-
-const something = {
-  push: {
-    roomId: 'sdaf@#RFAD',
-    userId: 'asd23resf',
-    name: 'jack'
-  },
-  pop: {
-    roomId: 'sdaf@#RFAD',
-    userId: 'asd23resf',
-    name: 'jack'
-  },
-  add: {
-    roomId: 'aasdf'
-  }
-}
