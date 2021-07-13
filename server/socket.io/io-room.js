@@ -1,32 +1,40 @@
-const ioRoom = (io, client, rooms)=>{
+const ioRoom = (io, client, rooms) => {
   client.on("createRoom", ({ roomId, userId }) => {
     if (rooms[roomId]) client.emit("error", "room exists already");
-    rooms[roomId] = { };
-    io.emit("updateRoom", ({ newRoom: { roomId } }))
+    rooms[roomId] = {};
+    io.emit("updateRoom", { newRoom: { roomId } });
   });
-
 
   client.on("joinRoom", ({ roomId, userId, name }) => {
     rooms[roomId][userId] = { name };
+<<<<<<< HEAD
     io.emit('updateRoom', { push: { roomId, userId, name } })
     const others = Object.keys(rooms[roomId]).filter((callerId)=>userId !== callerId)
     if(others.length){
       client.emit('otherCallers', others )
       others.forEach((other)=>io.to(other).emit('someoneJoined', other))
     }
+=======
+    io.emit("updateRoom", { push: { roomId, userId, name } });
+    const otherUsers = Object.keys(rooms[roomId]).filter(
+      (otherUserId) => userId !== otherUserId
+    );
+    if (otherUsers.length) client.emit("otherUsers", otherUsers);
+>>>>>>> tmp
   });
 
-  client.on('jumpRoom', ({ prevRoom, currentRoom, name, userId })=>{
-    delete rooms[prevRoom][userId]
-    rooms[currentRoom][userId] = { name }
-    io.emit('updateRoom', {
+  client.on("jumpRoom", ({ prevRoom, currentRoom, name, userId }) => {
+    delete rooms[prevRoom][userId];
+    rooms[currentRoom][userId] = { name };
+    io.emit("updateRoom", {
       pop: {
         roomId: prevRoom,
-        userId
-      }, 
+        userId,
+      },
       push: {
         roomId: currentRoom,
         userId,
+<<<<<<< HEAD
         name
       }
     })
@@ -35,11 +43,18 @@ const ioRoom = (io, client, rooms)=>{
       client.emit('otherCallers', others )
   })
 
+=======
+        name,
+      },
+    });
+  });
+>>>>>>> tmp
 
   client.on("leaveRoom", ({ roomId, userId }) => {
-    delete rooms[roomId][userId]
-    io.emit('updateRoom', { pop: { roomId, userId } })
+    delete rooms[roomId][userId];
+    io.emit("updateRoom", { pop: { roomId, userId } });
   });
+<<<<<<< HEAD
 
   client.on('offer', (payload)=>{
     const { targets, ...restofPayload } = payload
@@ -59,9 +74,19 @@ const ioRoom = (io, client, rooms)=>{
   });
 
 }
+=======
+>>>>>>> tmp
 
-module.exports = ioRoom
+  client.on("offer", ({ to, ...fromAndSdp }) => {
+    io.to(to).emit("receiveOffer", fromAndSdp);
+  });
 
+  client.on("answer", ({ to, ...fromAndAnswer }) => {
+    io.to(to).emit("receiveAnswer", fromAndAnswer);
+  });
+};
+
+<<<<<<< HEAD
 // const something = {
 //   push: {
 //     roomId: 'sdaf@#RFAD',
@@ -94,3 +119,6 @@ module.exports = ioRoom
 // io.on('connection', function(socket){
 //   socket.to('some room').emit('some event');
 // });
+=======
+module.exports = ioRoom;
+>>>>>>> tmp
