@@ -1,15 +1,15 @@
 import React, { useEffect, useRef } from 'react'
 
 const OutPutAudio =  ({partner})=>{
-  console.log(partner)
   const audioRef = useRef(null)
   useEffect(()=>{
     partner.myHisPeer.on('stream', (stream)=>{
+      console.log('the received stream==>', stream)
       audioRef.current.srcObject = stream
     })
   })
   return (
-    <audio ref={audioRef} controls></audio>
+    <audio ref={audioRef} autoPlay controls></audio>
   )
 }
 

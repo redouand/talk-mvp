@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.js": "/static/js/main.e5932634.chunk.js",
-    "main.js.map": "/static/js/main.e5932634.chunk.js.map",
+    "main.js": "/static/js/main.a82d83a1.chunk.js",
+    "main.js.map": "/static/js/main.a82d83a1.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.e2eafaf8.js",
     "runtime-main.js.map": "/static/js/runtime-main.e2eafaf8.js.map",
-    "static/js/2.1f98a645.chunk.js": "/static/js/2.1f98a645.chunk.js",
-    "static/js/2.1f98a645.chunk.js.map": "/static/js/2.1f98a645.chunk.js.map",
+    "static/js/2.89f4312b.chunk.js": "/static/js/2.89f4312b.chunk.js",
+    "static/js/2.89f4312b.chunk.js.map": "/static/js/2.89f4312b.chunk.js.map",
     "index.html": "/index.html",
-    "static/js/2.1f98a645.chunk.js.LICENSE.txt": "/static/js/2.1f98a645.chunk.js.LICENSE.txt",
+    "static/js/2.89f4312b.chunk.js.LICENSE.txt": "/static/js/2.89f4312b.chunk.js.LICENSE.txt",
     "static/media/join.f2723e70.mp3": "/static/media/join.f2723e70.mp3",
     "static/media/leave.e069f015.mp3": "/static/media/leave.e069f015.mp3"
   },
   "entrypoints": [
     "static/js/runtime-main.e2eafaf8.js",
-    "static/js/2.1f98a645.chunk.js",
-    "static/js/main.e5932634.chunk.js"
+    "static/js/2.89f4312b.chunk.js",
+    "static/js/main.a82d83a1.chunk.js"
   ]
 }
